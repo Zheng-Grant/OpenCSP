@@ -4,12 +4,14 @@
 from glob import glob
 from os.path import join
 from typing import Iterable
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import ndarray
 from scipy.spatial.transform import Rotation
 from tqdm import tqdm
+import pandas as pd
 
 from opencsp.common.lib.camera.Camera import Camera
 from opencsp.common.lib.geometry.Vxy import Vxy
@@ -20,7 +22,7 @@ import opencsp.common.lib.photogrammetry.photogrammetry as ph
 import opencsp.common.lib.tool.log_tools as lt
 
 
-class SceneReconstruction:
+class SceneReconstructionNoAruco:
     """Class containing methods and analysis algorithms to reconstruct a 3d
     scene of Aruco markers.
 
@@ -33,7 +35,7 @@ class SceneReconstruction:
         triangulation, by default 0.02 meters.
     """
 
-    def __init__(self, camera: Camera, known_point_locations: ndarray, image_filter_path: str) -> "SceneReconstruction":
+    def __init__(self, camera: Camera, known_point_locations: ndarray, image_filter_path: str, marked_points_path: str) -> "SceneReconstructionNoAruco":
         """Instantiates SceneReconstruction class
 
         Parameters
@@ -46,6 +48,8 @@ class SceneReconstruction:
             can be calculated from these. Columns are [Marker ID, X, Y, Z]
         image_filter_path : str
             Glob-like file path search string to locations of images with Aruco markers
+        marked_points_path : str
+            Path to the file with marked points. This needs to be a xlsx files
 
         """
         self.intersect_threshold = 0.02  # meters
@@ -55,6 +59,12 @@ class SceneReconstruction:
         self.known_point_locations = known_point_locations
         self.image_paths = glob(image_filter_path)
         self.image_paths.sort()
+
+        # sanity check the marked_points_path is a xlsx file
+        if not marked_points_path.endswith('.xlsx'):
+            raise ValueError(f"Marked points file must be an xlsx file, got {marked_points_path}")
+        
+        self.marked_points_path = marked_points_path
 
         # Declare attributes
         self.images: list[ImageMarker]  # Loaded image marker objects
@@ -155,14 +165,20 @@ class SceneReconstruction:
     def load_images(self) -> None:
         """Saves loaded dataset in class"""
         self.images: list[ImageMarker] = []
-        # TODO: remove the following after testing
-        pesudo_marked_pts = r"C:\Users\qzheng\Documents\GitHub\OpenCSP\opencsp\app\scene_reconstruction\test\data\data_measurement\_test_aruco_free_data\pseudo_markers.csv"
-        temp_img_file = r"C:\Users\qzheng\Documents\GitHub\OpenCSP\opencsp\app\scene_reconstruction\test\data\data_measurement\aruco_marker_images\DSC03655.JPG"
-        _test_file = ImageMarker.load_marked_origin(temp_img_file, 0, marked_pts_file=pesudo_marked_pts, camera=self.camera)
+        _marked_points = pd.ExcelFile(self.marked_points_path, engine='openpyxl')
+        _sheet_names = _marked_points.sheet_names
+        # Sanity check that the number of sheets is the same as the number of images
+        assert len(_marked_points.sheet_names) == len(self.image_paths), (
+            f"Number of sheets in marked points file ({len(_marked_points.sheet_names)}) "
+            f"does not match number of images ({len(self.image_paths)})"
+        )
+        
         # END TODO
         for idx, file in enumerate(tqdm(self.image_paths, desc="Loading marker images")):
-            self.images.append(ImageMarker.load_aruco_origin(file, idx, self.camera))
-
+            # Loade the corresponding sheet from the marked points file
+            _marked_points_current = _marked_points.parse(_sheet_names[idx])
+            self.images.append(ImageMarker.load_marked_origin(img_file=file, img_id=idx, marked_pts_df=_marked_points_current, camera=self.camera))
+            # self.images.append(ImageMarker.load_aruco_origin(file, idx, self.camera))
         # Save unique markers
         self.unique_point_ids = np.unique(np.hstack([im.point_ids for im in self.images]))
         self.unique_marker_ids = self.unique_point_ids.copy()

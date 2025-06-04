@@ -13,6 +13,7 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import ndarray
+import pandas as pd
 
 from opencsp.common.lib.camera.Camera import Camera
 import opencsp.common.lib.photogrammetry.photogrammetry as ph
@@ -81,6 +82,34 @@ class ImageMarker:
         ax.scatter(*pts_reproj.T, marker="o", facecolor="none", edgecolor="red", label="Reprojected")
         ax.scatter(*self.pts_im_xy.T, marker=".", color="blue", label="Image points")
         ax.legend()
+
+    @classmethod
+    def load_marked_origin(cls, img_file: str, img_id: int, marked_pts_df: pd.DataFrame, camera: Camera, **kwargs) -> "ImageMarker":
+        """Loads an image file, together with the file containing the marked origin points. This method is a mutation of the "load_aruco_origin" method, removes the dependsncy on AruCO markers.
+
+        Parameters
+        ----------
+        img_file : str
+            File path to image
+        img_id : int
+            Image index to save to image.
+        marked_pts_file : str
+            File path to the marked points file, which contains the origin point coordinates. This should be a CSV file. 
+            The CSV file should contain 3 columns: marker_id, x, y, where marker_id is the ID of the point, and x and y are the coordinates of the point in the image.
+            This resembles the Aruco marker origin point, where in the original file it stores the first corner of the marker.
+        camera : opencsp.common.lib.camera.Camera.Camera
+
+        Returns
+        """
+
+        img_gray = ph.load_image_grayscale(img_file)
+        ids_marker = marked_pts_df["marker_id"].to_numpy(dtype=int)
+        pts_mat = marked_pts_df[["x", "y"]].to_numpy(dtype=float)
+
+        return cls(img_gray, ids_marker, pts_mat, img_id, camera)
+
+
+
 
     @classmethod
     def load_aruco_origin(cls, file: str, img_id: int, camera: Camera, **kwargs) -> "ImageMarker":

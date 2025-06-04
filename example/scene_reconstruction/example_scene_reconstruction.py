@@ -1,8 +1,11 @@
-from os.path import join, dirname
-
+from os.path import join, dirname, abspath
+import sys
 import numpy as np
+sys.path.append(abspath(join(dirname(__file__), '..', '..')))
+
 
 from opencsp.app.scene_reconstruction.lib.SceneReconstruction import SceneReconstruction
+from opencsp.app.scene_reconstruction.lib.SceneReconstruction_no_aruco import SceneReconstructionNoAruco
 from opencsp.common.lib.camera.Camera import Camera
 from opencsp.common.lib.geometry.Vxyz import Vxyz
 from opencsp.common.lib.opencsp_path.opencsp_root_path import opencsp_code_dir
@@ -10,7 +13,12 @@ import opencsp.common.lib.tool.file_tools as ft
 import opencsp.common.lib.tool.log_tools as lt
 
 
+
+
 def scene_reconstruction(dir_output, dir_input):
+
+    # TODO: remove the dependency on AruCO markers
+
     """
     Reconstructs the XYZ locations of Aruco markers in a scene.
 
@@ -54,6 +62,12 @@ def scene_reconstruction(dir_output, dir_input):
     point_pair_distances = np.loadtxt(join(dir_input, 'point_pair_distances.csv'), delimiter=',', skiprows=1)
     alignment_points = np.loadtxt(join(dir_input, 'alignment_points.csv'), delimiter=',', skiprows=1)
 
+    # TODO: Test block for no aruco scene reconstruction
+    marked_points_path = join(dir_input, '_test_aruco_free_data/pseudo_markers_full.xlsx')
+    cal_scene_recon = SceneReconstructionNoAruco(camera, known_point_locations, image_filter_path, marked_points_path=marked_points_path)
+    cal_scene_recon.make_figures = True
+    cal_scene_recon.run_calibration()
+
     # Perform marker position calibration
     cal_scene_recon = SceneReconstruction(camera, known_point_locations, image_filter_path)
     cal_scene_recon.make_figures = True
@@ -92,8 +106,9 @@ def example_driver(dir_output_fixture, dir_input_fixture):
     # Set up logger
     lt.logger(join(dir_output, 'log.txt'), lt.log.INFO)
 
+   
     scene_reconstruction(dir_output, dir_input)
 
 
 if __name__ == '__main__':
-    example_driver()
+    example_driver(None, None)

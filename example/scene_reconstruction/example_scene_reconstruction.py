@@ -63,15 +63,17 @@ def scene_reconstruction(dir_output, dir_input):
     alignment_points = np.loadtxt(join(dir_input, 'alignment_points.csv'), delimiter=',', skiprows=1)
 
     # TODO: Test block for no aruco scene reconstruction
-    marked_points_path = join(dir_input, '_test_aruco_free_data/pseudo_markers_full.xlsx')
-    cal_scene_recon = SceneReconstructionNoAruco(camera, known_point_locations, image_filter_path, marked_points_path=marked_points_path)
-    cal_scene_recon.make_figures = True
-    cal_scene_recon.run_calibration()
+    # marked_points_path = join(dir_input, '_test_aruco_free_data/pseudo_markers_full.xlsx')
+    # cal_scene_recon = SceneReconstructionNoAruco(camera, known_point_locations, image_filter_path, marked_points_path=marked_points_path)
+    # cal_scene_recon.make_figures = True
+    # cal_scene_recon.run_calibration()
 
+    # TODO: Uncomment the following lines if the one above is broken
     # Perform marker position calibration
     cal_scene_recon = SceneReconstruction(camera, known_point_locations, image_filter_path)
     cal_scene_recon.make_figures = True
     cal_scene_recon.run_calibration()
+    # End TODO
 
     # Scale points
     point_pairs = point_pair_distances[:, :2].astype(int)

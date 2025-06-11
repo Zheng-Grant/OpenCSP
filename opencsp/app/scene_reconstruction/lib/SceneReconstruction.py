@@ -155,11 +155,6 @@ class SceneReconstruction:
     def load_images(self) -> None:
         """Saves loaded dataset in class"""
         self.images: list[ImageMarker] = []
-        # TODO: remove the following after testing
-        pesudo_marked_pts = r"C:\Users\qzheng\Documents\GitHub\OpenCSP\opencsp\app\scene_reconstruction\test\data\data_measurement\_test_aruco_free_data\pseudo_markers.csv"
-        temp_img_file = r"C:\Users\qzheng\Documents\GitHub\OpenCSP\opencsp\app\scene_reconstruction\test\data\data_measurement\aruco_marker_images\DSC03655.JPG"
-        _test_file = ImageMarker.load_marked_origin(temp_img_file, 0, marked_pts_file=pesudo_marked_pts, camera=self.camera)
-        # END TODO
         for idx, file in enumerate(tqdm(self.image_paths, desc="Loading marker images")):
             self.images.append(ImageMarker.load_aruco_origin(file, idx, self.camera))
 

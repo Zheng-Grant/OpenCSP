@@ -33,7 +33,7 @@ class SceneReconstruction:
         triangulation, by default 0.02 meters.
     """
 
-    def __init__(self, camera: Camera, known_point_locations: ndarray, image_filter_path: str) -> "SceneReconstruction":
+    def __init__(self, camera: Camera, known_point_locations: ndarray, image_filter_path: str, **kwargs) -> "SceneReconstruction":
         """Instantiates SceneReconstruction class
 
         Parameters
@@ -46,6 +46,8 @@ class SceneReconstruction:
             can be calculated from these. Columns are [Marker ID, X, Y, Z]
         image_filter_path : str
             Glob-like file path search string to locations of images with Aruco markers
+
+        kwargs : Currently setup to accept point description xlsx file
 
         """
         self.intersect_threshold = 0.02  # meters
@@ -70,6 +72,10 @@ class SceneReconstruction:
         # Save figures
         self.make_figures = False
         self.figures: list[plt.Figure] = []
+
+        for key, value in kwargs.items():
+            assert key == "marked_points_path", "Incorrect variable name, must be marked_points_path"
+            setattr(self, key, value)
 
     @property
     def located_camera_idxs(self) -> ndarray:

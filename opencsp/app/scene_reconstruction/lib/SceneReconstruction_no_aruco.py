@@ -107,9 +107,10 @@ class SceneReconstructionNoAruco:
 
     def convert_to_four_corners(self) -> None:
         """Converts all images to four corner images instead of single points"""
+        # TODO: turn off the 4-corner for experiment
         for image in self.images:
             image.convert_to_four_corner()
-
+        # END TODO
         self.unique_point_ids = np.unique(np.hstack([im.point_ids for im in self.images]))
         self.unique_marker_ids = np.floor(self.unique_point_ids.astype(float) / 4).astype(int)
 
@@ -496,9 +497,13 @@ class SceneReconstructionNoAruco:
                 f"{self.unlocated_marker_ids.size:d} markers remain unlocated. " "More camera images may be needed."
             )
 
+        # TODO: Remove the dependency on 4 corner model
         # Convert to 4-corner model
         lt.debug("SceneReconstruction entering final 4 point refinement phase")
-        self.convert_to_four_corners()
+        # self.convert_to_four_corners()
+        # END TODO
+
+
 
         # Intersect rays
         self.attempt_all_points_triangulation(intersect_thresh)

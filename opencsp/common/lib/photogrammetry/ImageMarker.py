@@ -154,7 +154,7 @@ class ImageMarker:
         pts_im_xy = np.vstack(pts_list)
         num_markers = len(point_ids)
 
-        point_ids = np.array(point_ids) * 4
+        point_ids = np.array(point_ids) * 4 # Make extra space for four corners
         point_ids = np.repeat(point_ids, 4)
         point_ids += np.array([0, 1, 2, 3] * num_markers)
 

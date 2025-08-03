@@ -57,6 +57,10 @@ def scene_reconstruction(dir_output, dir_input):
 
     # Load components
     camera = Camera.load_from_hdf(join(dir_input, 'camera.h5'))
+    # added camera adjustment for highresolution images
+    if "hi_res" in dir_input:
+        camera.image_shape_xy *= 5
+        camera.intrinsic_mat *= 5
     known_point_locations = np.loadtxt(join(dir_input, 'known_point_locations.csv'), delimiter=',', skiprows=1)
     image_filter_path = join(dir_input, 'aruco_marker_images', '*.JPG')
     point_pair_distances = np.loadtxt(join(dir_input, 'point_pair_distances.csv'), delimiter=',', skiprows=1)
@@ -113,5 +117,5 @@ def example_driver(dir_output_fixture, dir_input_fixture):
 
 
 if __name__ == '__main__':
-    # example_driver(dir_output_fixture=join(dirname(__file__), 'data/output/scene_reconstruction_hi_res'), dir_input_fixture=join(opencsp_code_dir(), 'app/scene_reconstruction/test/data/data_measurement_hi_res'))
-    example_driver(None, None)
+    example_driver(dir_output_fixture=join(dirname(__file__), 'data/output/scene_reconstruction_hi_res'), dir_input_fixture=join(opencsp_code_dir(), 'app/scene_reconstruction/test/data/data_measurement_hi_res'))
+    # example_driver(None, None)

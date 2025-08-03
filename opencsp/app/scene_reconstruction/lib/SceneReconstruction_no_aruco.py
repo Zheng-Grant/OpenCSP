@@ -105,22 +105,22 @@ class SceneReconstructionNoAruco:
         """Returns all unlocated marker IDs"""
         return np.unique(np.hstack([image.unlocated_point_ids for image in self.images]))
 
-    def convert_to_four_corners(self) -> None:
-        """Converts all images to four corner images instead of single points"""
-        # TODO: turn off the 4-corner for experiment
-        for image in self.images:
-            image.convert_to_four_corner()
-        # END TODO
-        self.unique_point_ids = np.unique(np.hstack([im.point_ids for im in self.images]))
-        self.unique_marker_ids = np.floor(self.unique_point_ids.astype(float) / 4).astype(int)
+    # def convert_to_four_corners(self) -> None:
+    #     """Converts all images to four corner images instead of single points"""
+    #     # TODO: turn off the 4-corner for experiment
+    #     for image in self.images:
+    #         image.convert_to_four_corner()
+    #     # END TODO
+    #     self.unique_point_ids = np.unique(np.hstack([im.point_ids for im in self.images]))
+    #     self.unique_marker_ids = np.floor(self.unique_point_ids.astype(float) / 4).astype(int)
 
-        mask_nan = np.array([1, np.nan, np.nan, np.nan] * self.num_points)
-        mask_zero = np.array([1, 0, 0, 0] * self.num_points)
+    #     mask_nan = np.array([1, np.nan, np.nan, np.nan] * self.num_points)
+    #     mask_zero = np.array([1, 0, 0, 0] * self.num_points)
 
-        self.num_points = self.unique_point_ids.size
-        self.points_xyz = np.repeat(self.points_xyz, 4, axis=0) * mask_nan[:, None]
-        self.located_point_ids = self.located_point_ids * 4
-        self.located_point_mask = (np.repeat(self.located_point_mask, 4) * mask_zero).astype(bool)
+    #     self.num_points = self.unique_point_ids.size
+    #     self.points_xyz = np.repeat(self.points_xyz, 4, axis=0) * mask_nan[:, None]
+    #     self.located_point_ids = self.located_point_ids * 4
+    #     self.located_point_mask = (np.repeat(self.located_point_mask, 4) * mask_zero).astype(bool)
 
     def set_id_known(self, id_: int, pt: np.ndarray) -> None:
         """Sets given ID as known in all images
@@ -314,8 +314,8 @@ class SceneReconstructionNoAruco:
 
     def scale_points(self, point_pairs: ndarray[int], distances: ndarray[float]) -> None:
         """Scales point locations to match measured distances between pairs
-        of Aruco marker origin points (corner 0).
-        (Must be applied after conversion to the four point model)
+        Aruco dependency removes, only scales points on the specified values.
+        
 
         Parameters
         ----------
@@ -325,7 +325,7 @@ class SceneReconstructionNoAruco:
             (N,) array of distances between point pairs
         """
         # Calculate scales
-        scales = ph.scale_points(Vxyz(self.points_xyz.T), self.unique_point_ids, point_pairs * 4, distances)
+        scales = ph.scale_points(Vxyz(self.points_xyz.T), self.unique_point_ids, point_pairs, distances)
 
         lt.info("Point cloud scaling summary:")
         lt.info(f"Calculated average point cloud scale: {scales.mean():.4f}.")
@@ -354,7 +354,7 @@ class SceneReconstructionNoAruco:
         # Gather points with matching marker IDs
         pts_obj = []
         for id_ in marker_ids:
-            mask = self.unique_point_ids == (id_ * 4)
+            mask = self.unique_point_ids == (id_)
             pts_obj.append(self.points_xyz[mask])
         pts_obj = Vxyz(np.array(pts_obj).T)
 
@@ -499,7 +499,7 @@ class SceneReconstructionNoAruco:
 
         # TODO: Remove the dependency on 4 corner model
         # Convert to 4-corner model
-        lt.debug("SceneReconstruction entering final 4 point refinement phase")
+        # lt.debug("SceneReconstruction entering final 4 point refinement phase")
         # self.convert_to_four_corners()
         # END TODO
 

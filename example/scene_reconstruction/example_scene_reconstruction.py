@@ -63,16 +63,16 @@ def scene_reconstruction(dir_output, dir_input):
     alignment_points = np.loadtxt(join(dir_input, 'alignment_points.csv'), delimiter=',', skiprows=1)
 
     # TODO: Test block for no aruco scene reconstruction
-    marked_points_path = join(dir_input, '_test_aruco_free_data/pseudo_markers_full.xlsx')
-    cal_scene_recon = SceneReconstructionNoAruco(camera, known_point_locations, image_filter_path, marked_points_path=marked_points_path)
-    cal_scene_recon.make_figures = True
-    cal_scene_recon.run_calibration()
+    # marked_points_path = join(dir_input, '_test_aruco_free_data/pseudo_markers_full.xlsx')
+    # cal_scene_recon = SceneReconstructionNoAruco(camera, known_point_locations, image_filter_path, marked_points_path=marked_points_path)
+    # cal_scene_recon.make_figures = True
+    # cal_scene_recon.run_calibration()
 
     # TODO: Uncomment the following lines if the one above is broken
     # Perform marker position calibration
-    # cal_scene_recon = SceneReconstruction(camera, known_point_locations, image_filter_path)
-    # cal_scene_recon.make_figures = True
-    # cal_scene_recon.run_calibration()
+    cal_scene_recon = SceneReconstruction(camera, known_point_locations, image_filter_path)
+    cal_scene_recon.make_figures = True
+    cal_scene_recon.run_calibration()
     # End TODO
 
     # Scale points
@@ -105,7 +105,7 @@ def example_driver(dir_output_fixture, dir_input_fixture):
     # Define output directory
     ft.create_directories_if_necessary(dir_input)
 
-    # Set up logger
+    # Set up logger 
     lt.logger(join(dir_output, 'log.txt'), lt.log.INFO)
 
    
@@ -113,4 +113,5 @@ def example_driver(dir_output_fixture, dir_input_fixture):
 
 
 if __name__ == '__main__':
+    # example_driver(dir_output_fixture=join(dirname(__file__), 'data/output/scene_reconstruction_hi_res'), dir_input_fixture=join(opencsp_code_dir(), 'app/scene_reconstruction/test/data/data_measurement_hi_res'))
     example_driver(None, None)

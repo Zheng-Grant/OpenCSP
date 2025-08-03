@@ -25,3 +25,6 @@ actual_output/
 
 # documentation generation
 doc/html/
+
+example/scene_reconstruction/data
+opencsp/app/scene_reconstruction/test/data

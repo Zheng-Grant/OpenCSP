@@ -65,12 +65,12 @@ def scene_reconstruction(dir_output, dir_input):
     image_filter_path = join(dir_input, 'aruco_marker_images', '*.JPG')
     point_pair_distances = np.loadtxt(join(dir_input, 'point_pair_distances.csv'), delimiter=',', skiprows=1)
     alignment_points = np.loadtxt(join(dir_input, 'alignment_points.csv'), delimiter=',', skiprows=1)
+    all_points = np.loadtxt(join(dir_input, 'all_points.csv'), delimiter=',', skiprows=1)
 
     # TODO: Test block for no aruco scene reconstruction
-    # marked_points_path = join(dir_input, '_test_aruco_free_data/pseudo_markers_full.xlsx')
-    # cal_scene_recon = SceneReconstructionNoAruco(camera, known_point_locations, image_filter_path, marked_points_path=marked_points_path)
-    # cal_scene_recon.make_figures = True
-    # cal_scene_recon.run_calibration()
+    cal_scene_recon = SceneReconstructionNoAruco(camera, known_point_locations, image_filter_path, marked_points_path=all_points)
+    cal_scene_recon.make_figures = True
+    cal_scene_recon.run_calibration()
 
     # TODO: Uncomment the following lines if the one above is broken
     # Perform marker position calibration

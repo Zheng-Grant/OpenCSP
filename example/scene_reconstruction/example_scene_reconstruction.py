@@ -58,14 +58,16 @@ def scene_reconstruction(dir_output, dir_input):
     # Load components
     camera = Camera.load_from_hdf(join(dir_input, 'camera.h5'))
     # added camera adjustment for highresolution images
-    if "hi_res" in dir_input:
-        camera.image_shape_xy *= 5
-        camera.intrinsic_mat *= 5
+    # if "hi_res" in dir_input:
+    #     camera.image_shape_xy *= 5
+    #     camera.intrinsic_mat *= 5
+
+
     known_point_locations = np.loadtxt(join(dir_input, 'known_point_locations.csv'), delimiter=',', skiprows=1)
     image_filter_path = join(dir_input, 'aruco_marker_images', '*.JPG')
     point_pair_distances = np.loadtxt(join(dir_input, 'point_pair_distances.csv'), delimiter=',', skiprows=1)
     alignment_points = np.loadtxt(join(dir_input, 'alignment_points.csv'), delimiter=',', skiprows=1)
-    all_points = np.loadtxt(join(dir_input, 'all_points.csv'), delimiter=',', skiprows=1)
+    all_points = join(dir_input, 'all_points.xlsx')
 
     # TODO: Test block for no aruco scene reconstruction
     cal_scene_recon = SceneReconstructionNoAruco(camera, known_point_locations, image_filter_path, marked_points_path=all_points)
@@ -74,9 +76,9 @@ def scene_reconstruction(dir_output, dir_input):
 
     # TODO: Uncomment the following lines if the one above is broken
     # Perform marker position calibration
-    cal_scene_recon = SceneReconstruction(camera, known_point_locations, image_filter_path)
-    cal_scene_recon.make_figures = True
-    cal_scene_recon.run_calibration()
+    # cal_scene_recon = SceneReconstruction(camera, known_point_locations, image_filter_path)
+    # cal_scene_recon.make_figures = True
+    # cal_scene_recon.run_calibration()
     # End TODO
 
     # Scale points
@@ -117,5 +119,9 @@ def example_driver(dir_output_fixture, dir_input_fixture):
 
 
 if __name__ == '__main__':
-    example_driver(dir_output_fixture=join(dirname(__file__), 'data/output/scene_reconstruction_hi_res'), dir_input_fixture=join(opencsp_code_dir(), 'app/scene_reconstruction/test/data/data_measurement_hi_res'))
+
+    input_dir = r"C:\Users\qzheng\Documents\GitHub\OpenCSP\example\scene_reconstruction\data\Photomodeler_targets\inputs"
+    output_dir = r"C:\Users\qzheng\Documents\GitHub\OpenCSP\example\scene_reconstruction\data\Photomodeler_targets\outputs"
+    # example_driver(dir_output_fixture=join(dirname(__file__), 'data/output/scene_reconstruction_hi_res'), dir_input_fixture=join(opencsp_code_dir(), 'app/scene_reconstruction/test/data/data_measurement_hi_res'))
     # example_driver(None, None)
+    example_driver(dir_output_fixture=output_dir, dir_input_fixture=input_dir)

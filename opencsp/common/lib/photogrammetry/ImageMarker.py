@@ -201,6 +201,8 @@ class ImageMarker:
         lt.debug(f"Camera pose {self.img_id:d} solved")
 
         # Check if pose is valid
+
+        # Use custom data, this validation returned false. 
         valid = ph.valid_camera_pose(self.camera, rvec, tvec, pts_img, pts_obj)
         if not valid:
             lt.debug(f"Camera pose {self.img_id:d} not valid")

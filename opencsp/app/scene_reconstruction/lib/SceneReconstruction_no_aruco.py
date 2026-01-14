@@ -61,8 +61,8 @@ class SceneReconstructionNoAruco:
         self.image_paths.sort()
 
         # sanity check the marked_points_path is a xlsx file
-        if not marked_points_path.endswith('.xlsx'):
-            raise ValueError(f"Marked points file must be an xlsx file, got {marked_points_path}")
+        # if not marked_points_path.endswith('.xlsx'):
+        #     raise ValueError(f"Marked points file must be an xlsx file, got {marked_points_path}")
         
         self.marked_points_path = marked_points_path
 
@@ -162,6 +162,67 @@ class SceneReconstructionNoAruco:
         pts_xyz_marker = self.known_point_locations[:, 1:4]
         # Set known IDs
         self.set_ids_known(marker_ids, pts_xyz_marker)
+
+    def load_images_txt(self) -> None:
+
+        def extract_photo_points_data(input_df: pd.DataFrame) -> pd.DataFrame:
+            """Converts the dataframe from the photomodeler text export to a dataframe that contains only the relevant columns.
+
+            The useful colums are "marker_id", "x", "y"
+            """
+
+            # Question: Could there be points in the hundreds?
+            marker_id = input_df['Object Point ID'].astype(int)
+            x = input_df['X (pixels)'].astype(int)
+            y = input_df['Y (pixels)'].astype(int)
+
+            output_df = pd.DataFrame({
+                'marker_id': marker_id,
+                'x': x,
+                'y': y
+            })
+
+            return output_df
+
+
+        """Saves loaded dataset in class"""
+        self.images: list[ImageMarker] = []
+        _marked_points = pd.read_csv(self.marked_points_path, skiprows=3)   # Default photomodeler export has the first three rows as header to store metadata
+        _photo_counts = len(np.unique(_marked_points['Photo #']))
+        assert _photo_counts == len(self.image_paths), (
+            f"Number of photos in marked points file ({_photo_counts}) "
+            f"does not match number of images ({len(self.image_paths)})"
+        )
+
+        for idx, file in enumerate(tqdm(self.image_paths, desc="Loading marker images")):
+            photo_num = idx + 1
+            _marked_points_current = _marked_points[_marked_points['Photo #'] == photo_num]
+            _marked_points_current = extract_photo_points_data(_marked_points_current)
+            self.images.append(ImageMarker.load_marked_origin(img_file=file, img_id=idx, marked_pts_df=_marked_points_current, camera=self.camera))
+
+        # _marked_points = pd.ExcelFile(self.marked_points_path, engine='openpyxl')
+        # _sheet_names = _marked_points.sheet_names
+        # # Sanity check that the number of sheets is the same as the number of images
+        # assert len(_marked_points.sheet_names) == len(self.image_paths), (
+        #     f"Number of sheets in marked points file ({len(_marked_points.sheet_names)}) "
+        #     f"does not match number of images ({len(self.image_paths)})"
+        # )
+        
+        # # END TODO
+        # for idx, file in enumerate(tqdm(self.image_paths, desc="Loading marker images")):
+        #     # Loade the corresponding sheet from the marked points file
+        #     _marked_points_current = _marked_points.parse(_sheet_names[idx])
+        #     self.images.append(ImageMarker.load_marked_origin(img_file=file, img_id=idx, marked_pts_df=_marked_points_current, camera=self.camera))
+        #     # self.images.append(ImageMarker.load_aruco_origin(file, idx, self.camera))
+        # Save unique markers
+        self.unique_point_ids = np.unique(np.hstack([im.point_ids for im in self.images]))
+        self.unique_marker_ids = self.unique_point_ids.copy()
+        self.num_markers = self.unique_point_ids.size
+        self.num_points = self.unique_point_ids.size
+        self.num_poses = len(self.images)
+        self.points_xyz = np.zeros((self.num_points, 3)) * np.nan
+        self.located_point_ids = np.array([])
+        self.located_point_mask = np.zeros(self.num_points, dtype=bool)
 
     def load_images(self) -> None:
         """Saves loaded dataset in class"""
@@ -514,7 +575,8 @@ class SceneReconstructionNoAruco:
     def run_calibration(self) -> None:
         """Runs the calibration sequence"""
         # Run calibration
-        self.load_images()
+        # self.load_images()
+        self.load_images_txt()
         self.save_ids_known()
         self.optimize(self.intersect_threshold)
         self.calculate_mean_reproj_errors()

@@ -68,7 +68,7 @@ def scene_reconstruction(dir_output, dir_input):
     point_pair_distances = np.loadtxt(join(dir_input, 'point_pair_distances.csv'), delimiter=',', skiprows=1)
     alignment_points = np.loadtxt(join(dir_input, 'alignment_points.csv'), delimiter=',', skiprows=1)
     # all_points = join(dir_input, 'all_points.xlsx')
-    all_points = join(dir_input, 'test_export.txt')
+    all_points = join(dir_input, 'PM_export.txt')
 
     # TODO: Test block for no aruco scene reconstruction
     cal_scene_recon = SceneReconstructionNoAruco(camera, known_point_locations, image_filter_path, marked_points_path=all_points)
